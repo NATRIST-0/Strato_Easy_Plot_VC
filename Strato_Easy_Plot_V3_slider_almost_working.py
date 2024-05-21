@@ -1,5 +1,6 @@
 #!/bin/usr python3
 # author: Tristan Gayrard
+#21/05/2024, Laramie WY
 
 """
 Strato_Easy_Plot_V3_slider_almost_working
