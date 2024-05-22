@@ -87,8 +87,11 @@ def update_plot(filtered_data):
     canvas1.draw()
 
 
-def rmse(predictions, targets):
-    return np.sqrt(((predictions - targets) ** 2).mean())
+# def rmse(predictions, targets):
+#     return np.sqrt(((predictions - targets) ** 2).mean())
+
+def rmse(targets):
+    return np.sqrt(np.mean((targets - np.mean(targets)) ** 2))
 
 sliders = []
 
@@ -132,8 +135,8 @@ def selected_stat_func():
             slider.ax.remove()
         sliders = []
         y1_variable_data = data[y1_variable]
-        overall_rmse = rmse(y1_variable_data.dropna(), y1_variable_data.shift().dropna())
-        plot1_2.axhline(y=overall_rmse, color='deepskyblue', linestyle='--', label=f'RMSE: {overall_rmse * 100: .2f}ppb')
+        overall_rmse = rmse(y1_variable_data.dropna())
+        plot1_2.axhline(y=overall_rmse, color='deepskyblue', linestyle='--', label=f'RMSE: {overall_rmse: .3e}')
         plot1_2.set_ylabel(f"RMSE of {y1_variable}", color='deepskyblue')
         plot1_2.legend()
         print("RMSE plotted")
@@ -150,11 +153,11 @@ def selected_stat_func():
 
     if selected_statistic != 'RMSE':
         line2, = plot1_2.plot(data['Time_from_start'], stat_plotted, color='green', alpha=0.5)
-        highlight2, = plot1_2.plot(data['Time_from_start'][:50], stat_plotted[:50], 'o', color='purple', markersize=5)
+        highlight2, = plot1_2.plot(data['Time_from_start'][:1], stat_plotted[:1], 'o', color='purple', markersize=5)
         
         def update(val1):
             start1 = int(val1)
-            end1 = start1 + 50
+            end1 = start1 + 1
             y_values2 = stat_plotted[start1:end1].values
             highlight2.set_xdata(data['Time_from_start'][start1:end1])
             highlight2.set_ydata(y_values2)
@@ -162,11 +165,11 @@ def selected_stat_func():
             
         def update_sliders(val):
             update(slider1.val)
-            slider1.valtext.set_text(f'{stat_plotted[int(slider1.val)]:.2f}')
+            slider1.valtext.set_text(f'{stat_plotted[int(slider1.val)]:.3e}')
             
         # Création de l'axe pour le nouveau slider
         ax_slider1 = fig1.add_axes([0.9, 0.2, 0.02, 0.7], facecolor='lightgoldenrodyellow')
-        slider1 = Slider(ax_slider1, f'Avg. of {selected_statistic}', 0, len(data['Time_from_start']) - 50, valinit=0, color='purple', orientation='vertical')
+        slider1 = Slider(ax_slider1, f'Avg. of {selected_statistic}', 0, len(data['Time_from_start']) - 1, valinit=0, color='purple', orientation='vertical')
         sliders.append(slider1)
         
         slider1.on_changed(update_sliders)
