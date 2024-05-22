@@ -16,7 +16,7 @@ import numpy as np
 from sys import exit
 
 def update_plot(filtered_data):
-    global plot1, plot1_2, plot1_3
+    global plot1, plot1_2, plot1_3, sliders
 
     plot1.clear()
     if 'plot1_2' in globals() and plot1_2:
@@ -26,6 +26,15 @@ def update_plot(filtered_data):
         plot1_3.remove()  # Remove the existing secondary axis
         plot1_3 = None
 
+    if var0.get() == 'On':
+        var0.set('Off')
+    for slider in sliders:
+        print("Removing slider...")
+        slider.ax.remove()
+    sliders = []
+    window_text.delete("1.0", tk.END)
+    canvas1.draw()
+        
     y1_variable = selected_Y1.get()
     if y1_variable != 'Select a variable':
         y1_data = filtered_data[y1_variable]
@@ -34,7 +43,7 @@ def update_plot(filtered_data):
         plot1.set_ylabel(y1_variable, color="red")
         
     y2_variable = selected_Y1_2.get()
-    if y2_variable != 'Select a variable':
+    if y2_variable != 'Select a variable': 
         y2_data = filtered_data[y2_variable]
         plot1_2 = plot1.twinx()
         plot1_2.plot(filtered_data['Time_from_start'], y2_data, label=y2_variable, color="blue")
@@ -81,7 +90,6 @@ def update_plot(filtered_data):
 def rmse(predictions, targets):
     return np.sqrt(((predictions - targets) ** 2).mean())
 
-# Variables globales pour stocker les sliders
 sliders = []
 
 def selected_stat_func():
@@ -211,12 +219,14 @@ def _clear1():
     selected_Y1_2.set(columns[0])
     selected_Y1_3.set(columns[0])
     
+    if var0.get() == 'On':
+        var0.set('Off')
     for slider in sliders:
         print("Removing slider...")
         slider.ax.remove()
     sliders = []
     window_text.delete("1.0", tk.END)
-    canvas1.draw()  # Redraw the canvas after clearing sliders
+    canvas1.draw()
 
 def on_close():
     root.destroy()
