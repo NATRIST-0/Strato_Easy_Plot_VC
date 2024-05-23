@@ -4,21 +4,23 @@
 """
 Strato_Easy_Plot_V3
 """
-
-import tkinter as tk
-from tkinter import Text, filedialog
-from tkinter import ttk
+import os
+import numpy as np
 import pandas as pd
+import tkinter as tk
+from tkinter import ttk
+from tkinter import Text, filedialog
 from matplotlib.figure import Figure
 from matplotlib.widgets import Slider
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import numpy as np
+
 from sys import exit
 
 def update_plot(filtered_data):
     global plot1, plot1_2, plot1_3, sliders
 
     plot1.clear()
+
     if 'plot1_2' in globals() and plot1_2:
         plot1_2.remove()  
         plot1_2 = None
@@ -26,15 +28,14 @@ def update_plot(filtered_data):
         plot1_3.remove()  
         plot1_3 = None
 
-    if var0.get() == 'On':
-        selected_stat_func(filtered_data)
-    else:
-        for slider in sliders:
-            slider.ax.remove()
-        sliders = []
-        window_text.delete("1.0", tk.END)
-        canvas1.draw()
-        
+    # Suppression des anciens sliders
+    for slider in sliders:
+        slider.ax.remove()
+    sliders = []
+
+    window_text.delete("1.0", tk.END)
+    canvas1.draw()
+    
     y1_variable = selected_Y1.get()
     if y1_variable != 'Select a variable':
         y1_data = filtered_data[y1_variable]
@@ -49,14 +50,14 @@ def update_plot(filtered_data):
         plot1_2.plot(filtered_data['Time_from_start'], y2_data, label=y2_variable, color="blue")
         plot1_2.set_ylabel(y2_variable, color="blue")
         plot1_2.yaxis.set_label_position("right")
-        plot1_2.set_yticks(np.linspace(plot1_2.get_ybound()[0], plot1_2.get_ybound()[1], num=5))  # Adjust the number of ticks as needed
+        plot1_2.set_yticks(np.linspace(plot1_2.get_ybound()[0], plot1_2.get_ybound()[1], num=5))  # Ajustez le nombre de ticks si nécessaire
         plot1_2.relim()
         plot1_2.autoscale()
 
     y3_variable = selected_Y1_3.get()
     if y3_variable != 'Select a variable':
         plot1_3 = plot1.twinx()
-        plot1_3.spines['right'].set_position(('outward', 60))
+        plot1_3.spines['right'].set_position(('outward', 65))
         y3_data = filtered_data[y3_variable]
         plot1_3.plot(filtered_data['Time_from_start'], y3_data, label=y3_variable, color="green")
         plot1_3.set_ylabel(y3_variable, color="green")
@@ -65,8 +66,9 @@ def update_plot(filtered_data):
         plot1_3.autoscale()
         
     plot1.grid(True)
-    plot1.relim()  # Recalculate limits
-    plot1.autoscale()  # Apply recalculated limits
+    plot1.relim()  # Recalcule les limites
+    plot1.autoscale()  # Applique les limites recalculées
+
     if plot1_2:
         plot1_2.relim()
         plot1_2.autoscale()
@@ -86,9 +88,7 @@ def update_plot(filtered_data):
 def rmse(targets):
     return np.sqrt(np.mean((targets - np.mean(targets)) ** 2))
 
-sliders = []
-
-def selected_stat_func(filtered_data):
+def plot_rmse():
     global plot1_2, sliders
 
     if 'plot1_2' in globals() and plot1_2:
@@ -97,44 +97,67 @@ def selected_stat_func(filtered_data):
     
     plot1_2 = plot1.twinx()
     plot1_2.yaxis.set_label_position("right")
-    window_size = int(window_text.get("1.0", "end-1c"))
     y1_variable = selected_Y1.get()
     if y1_variable == 'Select a variable':
         return
     
+    for slider in sliders:
+        slider.ax.remove()
+    sliders = []
+    y1_variable_data = filtered_data[y1_variable]
+    overall_rmse = rmse(y1_variable_data.dropna())
+    plot1_2.axhline(y=overall_rmse, color='deepskyblue', linestyle='--', label=f'RMSE: {overall_rmse: .3e}')
+    plot1_2.set_ylabel(f"RMSE of {y1_variable}", color='steelblue')
+    plot1_2.legend()
+    plot1_2.relim()
+    plot1_2.autoscale()
+    canvas1.draw()
+    return 
+
+sliders = []
+
+def selected_stat_func(filtered_data):
+    global plot1_2, sliders
+
+    if 'plot1_2' in globals() and plot1_2:
+        plot1_2.remove()
+        plot1_2 = None
+
+    plot1_2 = plot1.twinx()
+    plot1_2.yaxis.set_label_position("right")
+
+    window_size_text = window_text.get("1.0", "end-1c")
+    if window_size_text.strip():  # Check if the string is not empty or only contains whitespace
+        window_size = int(window_size_text)
+    else:
+        window_size = 1  # Default value if the window size is not provided
+
+    y1_variable = selected_Y1.get()
+    if y1_variable == 'Select a variable':
+        return
+
+    if selected_stat.get() == 'RMSE':
+        plot_rmse()  # Call plot_rmse() here
+
     selected_statistic = selected_stat.get()
-    
     if selected_statistic == 'Rolling Mean':
         rolling_mean = filtered_data[y1_variable].rolling(window=window_size).mean()
-        plot1_2.plot(filtered_data['Time_from_start'], rolling_mean, linestyle='--', color='steelblue')
-        plot1_2.set_ylabel(f"Rolling mean of {y1_variable}", color='steelblue')
+        plot1_2.plot(filtered_data['Time_from_start'], rolling_mean, color='forestgreen')
+        plot1_2.set_ylabel(f"Rolling mean of {y1_variable}", color='forestgreen')
         stat_plotted = rolling_mean
     elif selected_statistic == 'Rolling Standard Deviation':
         rolling_std = filtered_data[y1_variable].rolling(window=window_size).std()
-        plot1_2.plot(filtered_data['Time_from_start'], rolling_std, linestyle='--', color='steelblue')
-        plot1_2.set_ylabel(f"Rolling Std Dev of {y1_variable}", color='steelblue')
+        plot1_2.plot(filtered_data['Time_from_start'], rolling_std, color='forestgreen')
+        plot1_2.set_ylabel(f"Rolling Std Dev of {y1_variable}", color='forestgreen')
         stat_plotted = rolling_std
     elif selected_statistic == 'Relative Standard Deviation':
         rolling_mean = filtered_data[y1_variable].rolling(window=window_size).mean()
         rolling_std = filtered_data[y1_variable].rolling(window=window_size).std()
         rolling_cv = (rolling_std / rolling_mean) * 100
-        plot1_2.plot(filtered_data['Time_from_start'], rolling_cv, linestyle='--', color='steelblue')
-        plot1_2.set_ylabel(f"Relative Std Dev of {y1_variable} (%)", color='steelblue')
+        plot1_2.plot(filtered_data['Time_from_start'], rolling_cv, color='forestgreen')
+        plot1_2.set_ylabel(f"Relative Std Dev of {y1_variable} (%)", color='forestgreen')
         stat_plotted = rolling_cv
-    elif selected_statistic == 'RMSE':
-        for slider in sliders:
-            slider.ax.remove()
-        sliders = []
-        y1_variable_data = filtered_data[y1_variable]
-        overall_rmse = rmse(y1_variable_data.dropna())
-        plot1_2.axhline(y=overall_rmse, color='deepskyblue', linestyle='--', label=f'RMSE: {overall_rmse: .3e}')
-        plot1_2.set_ylabel(f"RMSE of {y1_variable}", color='steelblue')
-        plot1_2.legend()
-        plot1_2.relim()
-        plot1_2.autoscale()
-        canvas1.draw()
-        return 
-    
+
     # Réinitialisation des sliders existants
     for slider in sliders:
         slider.ax.remove()
@@ -142,8 +165,8 @@ def selected_stat_func(filtered_data):
 
     if selected_statistic != 'RMSE':
         line2, = plot1_2.plot(filtered_data['Time_from_start'], stat_plotted, color='steelblue', alpha=0.5)
-        highlight2, = plot1_2.plot(filtered_data['Time_from_start'][:1], stat_plotted[:1], 'o', color='m', markersize=5)
-        
+        highlight2, = plot1_2.plot(filtered_data['Time_from_start'][:1], stat_plotted[:1], 'o', color='steelblue', markersize=5)
+
         def update(val1):
             start1 = int(val1)
             end1 = start1 + 1
@@ -151,20 +174,22 @@ def selected_stat_func(filtered_data):
             highlight2.set_xdata(filtered_data['Time_from_start'][start1:end1])
             highlight2.set_ydata(y_values2)
             fig1.canvas.draw_idle()
-            
+
         def update_sliders(val):
             update(slider1.val)
-            slider1.valtext.set_text(f'{stat_plotted[int(slider1.val)]:.3e}')
-            
+            # Properly update the slider text with the corresponding value from stat_plotted
+            slider1.valtext.set_text(f'{stat_plotted.iloc[int(slider1.val)]:.3e}')
+
         ax_slider1 = fig1.add_axes([0.9, 0.2, 0.02, 0.7], facecolor='lightgoldenrodyellow')
         slider1 = Slider(ax_slider1, f'Avg. of {selected_statistic}', 0, len(filtered_data['Time_from_start']) - 1, valinit=0, color='steelblue', orientation='vertical')
         sliders.append(slider1)
-        
+
         slider1.on_changed(update_sliders)
-        
+
         plot1_2.relim()
         plot1_2.autoscale()
         canvas1.draw()
+
 
             
 
@@ -178,8 +203,6 @@ def on_time_change(event):
         return filtered_data
     except ValueError:
         pass
-
-
 
 
 def load_file():
@@ -196,10 +219,13 @@ def load_file():
 
         update_dropdowns()
         update_plot(data)
-        if file_path:
-            file_label.config(text=file_path)
-            return file_path
-        return None
+        
+        # Extract the file name from the file path
+        file_name = os.path.basename(file_path)
+        file_label.config(text=file_name)
+        return file_path
+    return None
+
 
 def convert_time_from_start(start_time, current_time):
     time_diff = current_time - start_time
@@ -211,8 +237,10 @@ def _clear1():
     plot1.clear()
     if plot1_2:
         plot1_2.clear()
+        plot1_2 = None  # Réinitialisation de plot1_2
     if plot1_3:
         plot1_3.clear()
+        plot1_3 = None  # Réinitialisation de plot1_3
     time1.delete("1.0", tk.END)
     time2.delete("1.0", tk.END)
     canvas1.draw()
@@ -360,9 +388,9 @@ def guide():
         guide_text = (
             "- Load RAW Aeris Data file\n"
             "- To use any statistics, must enter window and time limits\n"
-            "   even for RMSE\n"
-            "- To use slider, Plot Line CheckButton must be On\n"
-            "- Most important rule : Enjoy Making Plots"
+            "  for RMSE only enter time limits\n"
+            "- To use slider, Plot Stat CheckButton must be On\n"
+            "- Règle la plus importante : Enjoy Making Plots"
         )
         guide_label.config(text=guide_text, foreground="red")
 
