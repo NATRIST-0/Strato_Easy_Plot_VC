@@ -196,6 +196,10 @@ def load_file():
 
         update_dropdowns()
         update_plot(data)
+        if file_path:
+            file_label.config(text=file_path)
+            return file_path
+        return None
 
 def convert_time_from_start(start_time, current_time):
     time_diff = current_time - start_time
@@ -343,6 +347,9 @@ clear_button.grid(row=6, column=1, padx=10, pady=5)
 load_button = ttk.Button(frame_controls, text="Load File", command=load_file)
 load_button.grid(row=6, column=2, padx=10, pady=5)
 
+file_label = ttk.Label(frame_controls, text="", font=('Sans-serif', 12))
+file_label.grid(row=6, column=8, sticky="e")
+
 guide_label = ttk.Label(frame_controls, text="", font=('Sans-serif', 12))
 guide_label.grid(row=7, column=0, columnspan=4, padx=10, pady=5)
 
@@ -352,11 +359,12 @@ def guide():
     else:
         guide_text = (
             "- Load RAW Aeris Data file\n"
-            "- To use statistics, must enter window\n"
+            "- To use any statistics, must enter window and time limits\n"
             "   even for RMSE\n"
-            "- To use slider, Plot Line CheckButton must be On"
+            "- To use slider, Plot Line CheckButton must be On\n"
+            "- Most important rule : Enjoy Making Plots"
         )
-        guide_label.config(text=guide_text)
+        guide_label.config(text=guide_text, foreground="red")
 
 guide_button = ttk.Button(frame_controls, text="?", command=guide)
 guide_button.grid(row=6, column=0, padx=10, pady=5)
