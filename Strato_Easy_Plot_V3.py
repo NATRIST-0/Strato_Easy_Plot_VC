@@ -39,9 +39,9 @@ def update_plot(filtered_data):
     y1_variable = selected_Y1.get()
     if y1_variable != 'Select a variable':
         y1_data = filtered_data[y1_variable]
-        plot1.plot(filtered_data['Time_from_start'], y1_data, label=y1_variable, color="red")
+        plot1.plot(filtered_data['Time_from_start'], y1_data, label=y1_variable, color="crimson")
         plot1.set_xlabel('Time of running (h)')
-        plot1.set_ylabel(y1_variable, color="red")
+        plot1.set_ylabel(y1_variable, color="crimson")
         
     y2_variable = selected_Y1_2.get()
     if y2_variable != 'Select a variable': 
@@ -59,8 +59,8 @@ def update_plot(filtered_data):
         plot1_3 = plot1.twinx()
         plot1_3.spines['right'].set_position(('outward', 65))
         y3_data = filtered_data[y3_variable]
-        plot1_3.plot(filtered_data['Time_from_start'], y3_data, label=y3_variable, color="green")
-        plot1_3.set_ylabel(y3_variable, color="green")
+        plot1_3.plot(filtered_data['Time_from_start'], y3_data, label=y3_variable, color="mediumorchid")
+        plot1_3.set_ylabel(y3_variable, color="mediumorchid")
         plot1_3.yaxis.set_label_position("right")
         plot1_3.relim()
         plot1_3.autoscale()
