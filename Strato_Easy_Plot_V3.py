@@ -237,11 +237,11 @@ def _clear1():
     global plot1, plot1_2, plot1_3, sliders
     plot1.clear()
     if plot1_2:
-        plot1_2.clear()
-        plot1_2 = None  # Réinitialisation de plot1_2
+        plot1_2.remove()  
+        plot1_2 = None
     if plot1_3:
-        plot1_3.clear()
-        plot1_3 = None  # Réinitialisation de plot1_3
+        plot1_3.remove()
+        plot1_3 = None
     time1.delete("1.0", tk.END)
     time2.delete("1.0", tk.END)
     canvas1.draw()
