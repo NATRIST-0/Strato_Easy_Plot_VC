@@ -142,19 +142,19 @@ def selected_stat_func(filtered_data):
     selected_statistic = selected_stat.get()
     if selected_statistic == 'Rolling Mean':
         rolling_mean = filtered_data[y1_variable].rolling(window=window_size).mean()
-        plot1_2.plot(filtered_data['Time_from_start'], rolling_mean, color='forestgreen')
+        plot1_2.plot(filtered_data['Time_from_start'], rolling_mean, linestyle='--', color='forestgreen')
         plot1_2.set_ylabel(f"Rolling mean of {y1_variable}", color='forestgreen')
         stat_plotted = rolling_mean
     elif selected_statistic == 'Rolling Standard Deviation':
         rolling_std = filtered_data[y1_variable].rolling(window=window_size).std()
-        plot1_2.plot(filtered_data['Time_from_start'], rolling_std, color='forestgreen')
+        plot1_2.plot(filtered_data['Time_from_start'], rolling_std,linestyle='--', color='forestgreen')
         plot1_2.set_ylabel(f"Rolling Std Dev of {y1_variable}", color='forestgreen')
         stat_plotted = rolling_std
     elif selected_statistic == 'Relative Standard Deviation':
         rolling_mean = filtered_data[y1_variable].rolling(window=window_size).mean()
         rolling_std = filtered_data[y1_variable].rolling(window=window_size).std()
         rolling_cv = (rolling_std / rolling_mean) * 100
-        plot1_2.plot(filtered_data['Time_from_start'], rolling_cv, color='forestgreen')
+        plot1_2.plot(filtered_data['Time_from_start'], rolling_cv, linestyle='--', color='forestgreen')
         plot1_2.set_ylabel(f"Relative Std Dev of {y1_variable} (%)", color='forestgreen')
         stat_plotted = rolling_cv
 
@@ -165,7 +165,7 @@ def selected_stat_func(filtered_data):
 
     if selected_statistic != 'RMSE':
         line2, = plot1_2.plot(filtered_data['Time_from_start'], stat_plotted, color='steelblue', alpha=0.5)
-        highlight2, = plot1_2.plot(filtered_data['Time_from_start'][:1], stat_plotted[:1], 'o', color='steelblue', markersize=5)
+        highlight2, = plot1_2.plot(filtered_data['Time_from_start'][:1], stat_plotted[:1], 'o', markerfacecolor='yellow', markeredgecolor='black', markersize=6)
 
         def update(val1):
             start1 = int(val1)
@@ -181,13 +181,14 @@ def selected_stat_func(filtered_data):
             slider1.valtext.set_text(f'{stat_plotted.iloc[int(slider1.val)]:.3e}')
 
         ax_slider1 = fig1.add_axes([0.9, 0.2, 0.02, 0.7], facecolor='lightgoldenrodyellow')
-        slider1 = Slider(ax_slider1, f'Avg. of {selected_statistic}', 0, len(filtered_data['Time_from_start']) - 1, valinit=0, color='steelblue', orientation='vertical')
+        slider1 = Slider(ax_slider1, f'{selected_statistic} on marker', 0, len(filtered_data['Time_from_start']) - 1, valinit=0, color='yellow', orientation='vertical')
         sliders.append(slider1)
 
         slider1.on_changed(update_sliders)
 
         plot1_2.relim()
         plot1_2.autoscale()
+
         canvas1.draw()
 
 
