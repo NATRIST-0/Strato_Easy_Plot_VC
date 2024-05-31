@@ -12,7 +12,7 @@ from tkinter import ttk
 from tkinter import Text, filedialog
 from matplotlib.figure import Figure
 from matplotlib.widgets import Slider
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
 from sys import exit
 
@@ -66,8 +66,8 @@ def update_plot(filtered_data):
         plot1_3.autoscale()
         
     plot1.grid(True)
-    plot1.relim()  # Recalcule les limites
-    plot1.autoscale()  # Applique les limites recalculées
+    plot1.relim()
+    plot1.autoscale()
 
     if plot1_2:
         plot1_2.relim()
@@ -82,6 +82,10 @@ def update_plot(filtered_data):
     if selected_Y1_3.get() != 'Select a variable':
         title_parts.append(selected_Y1_3.get())
     plot1.set_title(f"{', '.join(title_parts)} in function of time")
+    
+    fig = canvas1.figure
+    fig.patch.set_linewidth(5)
+    fig.patch.set_edgecolor('slategrey')
 
     canvas1.draw()
 
@@ -302,6 +306,10 @@ plot1_3 = None
 
 canvas1 = FigureCanvasTkAgg(fig1, frame_plot)
 canvas1.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+
+toolbar = NavigationToolbar2Tk(canvas1, root)
+toolbar.update()
+canvas1.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
 frame_controls = ttk.Frame(frame_bottom)
 frame_controls.pack(side=tk.TOP, fill=tk.X)
